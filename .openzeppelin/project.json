@@ -2,7 +2,7 @@
   "manifestVersion": "2.2",
   "contracts": {},
   "dependencies": {},
-  "name": "collateralswap",
+  "name": "flashloanUsecases",
   "version": "1.0.0",
   "compiler": {
     "compilerSettings": {
