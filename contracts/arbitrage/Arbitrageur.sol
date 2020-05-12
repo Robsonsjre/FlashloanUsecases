@@ -4,8 +4,8 @@ import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/FlashL
 import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/ILendingPool.sol";
 import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/ILendingPoolAddressesProvider.sol";
 import "https://github.com/aave/aave-protocol/blob/master/contracts/configuration/LendingPoolParametersProvider.sol";
-import "./interfaces/UniswapInterface.sol";
-import "./interfaces/KyberNetworkProxyInterface.sol";
+import "https://github.com/Robsonsjre/FlashloanUsecases/blob/master/contracts/arbitrage/interfaces/UniswapInterface.sol";
+import "https://github.com/Robsonsjre/FlashloanUsecases/blob/master/contracts/arbitrage/interfaces/KyberNetworkProxyInterface.sol";
 
 contract ConstantAddresses is FlashLoanReceiverBase(address(0x24a42fD28C976A61Df5D00D0599C34c4f90748c8)) {
     address public constant DAI_ADDRESS = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
