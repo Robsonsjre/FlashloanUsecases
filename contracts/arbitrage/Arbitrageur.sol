@@ -2,58 +2,69 @@ pragma solidity ^0.5.0;
 
 import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/FlashLoanReceiverBase.sol";
 import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/ILendingPool.sol";
-import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/ILendingPoolAddressesProvider.sol";
-import "https://github.com/aave/aave-protocol/blob/master/contracts/configuration/LendingPoolParametersProvider.sol";
 import "./interfaces/UniswapInterface.sol";
-import "./interfaces/KyberNetworkProxyInterface.sol";
 
-contract ConstantAddresses is FlashLoanReceiverBase(address(0x24a42fD28C976A61Df5D00D0599C34c4f90748c8)) {
-    address public constant DAI_ADDRESS = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-    address public constant USDC_ADDRESS = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address public constant KYBER_INTERFACE = 0x818E6FECD516Ecc3849DAf6845e3EC868087B755;
-    address public constant UNISWAP_FACTORY = 0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95;
-    address public constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+contract Addresses is FlashLoanReceiverBase(address(0x506B0B2CF20FAA8f38a4E2B524EE43e1f4458Cc5)) {
+    address public constant DAI_ADDRESS = 0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD;
+    address public constant UNISWAP_FACTORY_A = 0xECc6C0542710a0EF07966D7d1B10fA38bbb86523;
+    address public constant UNISWAP_FACTORY_B = 0x54Ac34e5cE84C501165674782582ADce2FDdc8F4;
 }
 
 /*
-1e18 - 1000000000000000000
-DAI to USDC by Uniswap
-USDC to ETH by Kyber
-ETH to DAI by Uniswap
-*/
-contract Arbitrageur is ConstantAddresses {
-    ERC20 public asset;
+ * Arbitrageur is a contract to simulate the usage of flashloans
+ * to make profit out of a market inbalacement
+ * 
+ * For this example we deployed 2 Uniswap instances which we'll
+ * call by ExchangeA and ExchangeB
+ * 
+ * The steps happens as following:
+ * 1. Borrow DAI from Aave
+ * 2. Buy ETH with DAI on ExchangeA
+ * 3. Sell ETH for DAI on ExchangeB
+ * 4. Repay Aave loan
+ * 5. Keep the profits
+ */
+contract Arbitrageur is Addresses {
     ILendingPool public lendingPool;
-    LendingPoolParametersProvider public parametersProvider;
-    UniswapFactoryInterface public uniswapFactory;
-    UniswapExchangeInterface public uniswapDAIExchange;
-    KyberNetworkProxyInterface public kyberNetworkProxy;
+    UniswapExchangeInterface public exchangeA;
+    UniswapExchangeInterface public exchangeB;
+    UniswapFactoryInterface public uniswapFactoryA;
+    UniswapFactoryInterface public uniswapFactoryB;
+    
+    event Profit(uint256 amount);
     
     constructor () public {
-        kyberNetworkProxy = KyberNetworkProxyInterface(KYBER_INTERFACE);
-        uniswapFactory = UniswapFactoryInterface(UNISWAP_FACTORY);
-        uniswapDAIExchange = UniswapExchangeInterface(
-            uniswapFactory.getExchange(DAI_ADDRESS)
+        uniswapFactoryA = UniswapFactoryInterface(UNISWAP_FACTORY_A);
+        exchangeA = UniswapExchangeInterface(
+            uniswapFactoryA.getExchange(DAI_ADDRESS)
         );
         
-        asset = ERC20(DAI_ADDRESS);
+        uniswapFactoryB = UniswapFactoryInterface(UNISWAP_FACTORY_B);
+        exchangeB = UniswapExchangeInterface(
+            uniswapFactoryB.getExchange(DAI_ADDRESS)
+        );
         
         lendingPool = ILendingPool(
             addressesProvider.getLendingPool()
-        );
-        
-        parametersProvider = LendingPoolParametersProvider(
-            addressesProvider.getLendingPoolParametersProvider()
         );
     }
     
     /* 
      * Start the arbitrage
      */
-    function makeArbitrage(uint256 _amount) public onlyOwner {
+    function makeArbitrage(uint256 amount) public onlyOwner {
         bytes memory data = "";
-
-        lendingPool.flashLoan(address(this), DAI_ADDRESS, _amount, data);
+        
+        ERC20 dai = ERC20(DAI_ADDRESS);
+        
+        lendingPool.flashLoan(address(this), DAI_ADDRESS, amount, data);
+        
+        // Any left amount of DAI is considered profit
+        uint256 profit = dai.balanceOf(address(this));
+        emit Profit(profit);
+        
+        // Sending back the profits
+        require(dai.transfer(msg.sender, profit), "Could not transfer back the profit");
     }
     
     /* 
@@ -68,86 +79,52 @@ contract Arbitrageur is ConstantAddresses {
         external
     {
         require(_amount <= getBalanceInternal(address(this), _reserve), "Invalid balance, was the flashLoan successful?");
-        require(asset.transferFrom(msg.sender, address(this), _fee), "Could not pay for fees");
-
-        swapDAIToUSDC();
-        swapUSDCtoETH();
-        swapETHToDAI();
-
-        // Time to transfer the funds back
+        
+        // If transactions are not mined until deadline the transaction is reverted
+        uint256 deadline = getDeadline();
+        
+        ERC20 dai = ERC20(DAI_ADDRESS);
+        
+        // Buying ETH at Exchange A
+        require(dai.approve(address(exchangeA), _amount), "Could not approve DAI sell");
+        
+        uint256 ethBought = exchangeA.tokenToEthSwapInput(
+            _amount,
+            1,
+            deadline
+        );
+        
+        // Selling ETH at Exchange B
+        uint256 daiBought = exchangeB.ethToTokenSwapInput.value(ethBought)(
+            1,
+            deadline
+        );
+        
+        require(daiBought > _amount, "Did not profit");
+        
+        // Repay loan
         uint totalDebt = _amount.add(_fee);
         transferFundsBackToPoolInternal(_reserve, totalDebt);
     }
     
+    function getDeadline() internal returns (uint256) {
+        return now + 3000;
+    }
+    
     /* 
-     * Calculate fee for the amount
+     * Increase the price difference between both exchanges
+     * so there can still be arbitrage oportunities in the
+     * example
      */
-    function getFee(uint256 _amount) internal view returns (uint256) {
-        (uint256 totalFeeBips,) = parametersProvider.getFlashLoanFeesInBips();
-        uint256 amountFee = _amount.mul(totalFeeBips).div(10000);
-        return amountFee;
-    }
-    
-    function deadline() internal returns (uint256) {
-        return block.number.add(uint256(20));
-    }
-    
-    function swapDAIToUSDC() internal {
-        uint256 daiBalance = getBalanceInternal(address(this), DAI_ADDRESS);
-        
+    function imbalanceExchanges(uint256 _amount) external {
         ERC20 dai = ERC20(DAI_ADDRESS);
+        require(dai.transferFrom(msg.sender, address(this), _amount), "Could not tranfer DAI");
+        require(dai.approve(address(exchangeB), _amount), "Could not approve DAI sell");
         
-        // Mitigate ERC20 Approve front-running attack, by initially setting, allowance to 0
-        require(dai.approve(address(uniswapDAIExchange), 0), "Could not approve Uniswap transfer");
-
-        // Approve tokens so network can take them during the swap
-        dai.approve(address(uniswapDAIExchange), daiBalance);
-        
-        uniswapDAIExchange.tokenToTokenSwapInput(
-            daiBalance,
+        exchangeB.tokenToEthTransferInput(
+            _amount,
             1,
-            1,
-            deadline(),
-            USDC_ADDRESS
-        );
-    }
-    
-    function swapUSDCtoETH() internal {
-        uint256 usdcBalance = getBalanceInternal(address(this), USDC_ADDRESS);
-        
-        ERC20 usdc = ERC20(USDC_ADDRESS);
-        ERC20 eth = ERC20(ETH_ADDRESS);
-        
-        (, uint256 minRate) = kyberNetworkProxy.getExpectedRate(usdc, eth, usdcBalance);
-
-        // Mitigate ERC20 Approve front-running attack, by initially setting, allowance to 0
-        require(usdc.approve(address(kyberNetworkProxy), 0), "Could not approve Kyber transfer");
-
-        // Approve tokens so network can take them during the swap
-        usdc.approve(address(kyberNetworkProxy), usdcBalance);
-
-        kyberNetworkProxy.swapTokenToEther(
-            usdc,
-            usdcBalance,
-            minRate
-        );
-    }
-
-    function swapETHToDAI() internal {
-        uint256 ethBalance = getBalanceInternal(address(this), ETH_ADDRESS);
-        
-        uniswapDAIExchange.ethToTokenSwapInput(
-            ethBalance,
-            deadline()
-        );
-    }
-
-    /**
-     */
-    function getDAI() public payable {
-        uniswapDAIExchange.ethToTokenTransferInput.value(msg.value)(
-            1,
-            deadline(),
+            getDeadline(),
             msg.sender
         );
     }
