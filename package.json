@@ -1,0 +1,24 @@
+{
+  "name": "flashloanusecases",
+  "version": "1.0.0",
+  "description": "Possible use cases to use with flash loans",
+  "main": "networks.js",
+  "dependencies": {},
+  "devDependencies": {
+    "ganache-cli": "^6.9.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ganache": "ganache-cli -f https://mainnet.infura.io/v3/<INFURA_KEY>"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Robsonsjre/FlashloanUsecases.git"
+  },
+  "author": "robsonsje, ggviana",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Robsonsjre/FlashloanUsecases/issues"
+  },
+  "homepage": "https://github.com/Robsonsjre/FlashloanUsecases#readme"
+}
