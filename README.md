@@ -74,9 +74,8 @@ Here are a links that are useful when doing the assessment
 ## Contact
 
 Amadeo Brands - [@amadeobrands](https://twitter.com/amadeobrands) - amadeeo@eoi.digital<br>
-
-
-
+Guilherme Viana - [@ggviana](https://twitter.com/ggviana) - guilherme@pods.finance<br>
+Robson Silva - [@robsjr](https://twitter.com/robsjr) - rob@pods.finance<br>
 
 <br><strong>See more DeFi resources@ [ON-->DeFi](https://transform.eoi.digital/on-defi/)
 </stong><br>
