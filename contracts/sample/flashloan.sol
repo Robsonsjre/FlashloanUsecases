@@ -6,7 +6,7 @@ import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/ILendi
 
 //DAI ADDRESS: 0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD
 // PROVIDER ADDRESS: 0x506B0B2CF20FAA8f38a4E2B524EE43e1f4458Cc5
-// 1000 dai = 
+// 1000 dai = 1000000000000000000000 (Due to 18 decimal number)
 
 contract MyfirstFlashLoan is FlashLoanReceiverBase(address(0x506B0B2CF20FAA8f38a4E2B524EE43e1f4458Cc5)) {
 
