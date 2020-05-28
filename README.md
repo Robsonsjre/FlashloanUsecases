@@ -60,8 +60,7 @@ Let's start with the basics the goal is for you to initiate a Flash Loan Transna
 * Exicute the Arbitrage Flash loan (Be Sure to have enouge DAI to pay the FEES)
 * If there are any questions, issues or future requests please submit an issue
 
-[![create your own arbitrage opportunity]](https://github.com/Robsonsjre/FlashloanUsecases/tree/master/contracts/arbitrage)
-
+[![uniswap arbitrage defi201]](https://github.com/Robsonsjre/FlashloanUsecases/tree/master/contracts/arbitrage)
 
 # Create your own Arbitrage opportunity
 * Setup Remix http://remix.ethereum.org/
@@ -74,7 +73,7 @@ Let's start with the basics the goal is for you to initiate a Flash Loan Transna
 * Exicute the Arbitrage Flash loan (Be Sure to have enouge DAI to pay the FEES)
 * If there are any questions, issues or future requests please submit an issue
 
-[![uniswap arbitrage defi201]](https://github.com/Robsonsjre/FlashloanUsecases/tree/master/contracts/arbitrage)
+[![create your own arbitrage opportunity]](https://github.com/Robsonsjre/FlashloanUsecases/tree/master/contracts/arbitrage)
 
 # Useful links
 Here are useful links
