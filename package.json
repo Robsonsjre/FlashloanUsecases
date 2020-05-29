@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "description": "Possible use cases to use with flash loans",
   "main": "networks.js",
-  "dependencies": {},
   "devDependencies": {
-    "ganache-cli": "^6.9.1"
+    "ganache-cli": "^6.9.1",
+    "prettier": "^2.0.5",
+    "prettier-plugin-solidity": "^1.0.0-alpha.52",
+    "solhint": "^3.0.0",
+    "solhint-plugin-prettier": "0.0.4"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "ganache": "ganache-cli -f https://mainnet.infura.io/v3/<INFURA_KEY>"
+    "ganache": "ganache-cli -f https://mainnet.infura.io/v3/94ffbd85264d40db8fe9ff0fec8775a7",
+    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol",
+    "solhint": "./node_modules/.bin/solhint -f table contracts/**/*.sol"
   },
   "repository": {
     "type": "git",
