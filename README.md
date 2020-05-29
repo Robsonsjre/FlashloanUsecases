@@ -119,7 +119,7 @@ Robson Silva - [@robsjr](https://twitter.com/robsjr) - rob@pods.finance<br>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[product-screenshot]: images/screenshot.png
+[product-screenshot]: images/flashloan.png
 [banner]: images/defi-201-banner.png
 [dollar-trump]: images/dollar-trump-defi201.png
 [DeFi === Financial Revolution]: images/financial-revolution-DeFi201.png
