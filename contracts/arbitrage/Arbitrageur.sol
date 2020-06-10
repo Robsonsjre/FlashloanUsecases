@@ -4,6 +4,7 @@ import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/FlashL
 import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/ILendingPool.sol";
 import "https://github.com/Robsonsjre/FlashloanUsecases/blob/master/contracts/interfaces/IUniswap.sol";
 
+
 //1 DAI = 1000000000000000000 (18 decimals)
 /*
  * Arbitrageur is a contract to simulate the usage of flashloans
@@ -111,12 +112,11 @@ contract Arbitrageur is
             DAI_ADDRESS
         );
 
-
         // Repay loan
         uint256 totalDebt = _amount.add(_fee);
-        
-        // require(daiBought > totalDebt, "Did not profit");
-        
+
+        require(daiBought > totalDebt, "Did not profit");
+
         transferFundsBackToPoolInternal(_reserve, totalDebt);
     }
 
