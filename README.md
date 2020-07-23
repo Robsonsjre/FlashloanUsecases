@@ -2,7 +2,7 @@
 <br />
 <p align="center">
   <a href="#Program-Basics-Flash-Loan">
-    <img src="https://aave.com/static/media/flashLoan.8328cb8b.svg" alt="Logo" width="80" height="80">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpfQVLbjfGPX5Cl-DaRe0WE-ZqQycN-l_Vz-9m0RGU4w-9UBSV_A&s" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">DeFi 201 - Lets hack Flash Loans</h3>
   <p align="center">

@@ -5,6 +5,7 @@ import "https://github.com/mrdavey/ez-flashloan/blob/remix/contracts/aave/ILendi
 import "https://github.com/Robsonsjre/FlashloanUsecases/blob/master/contracts/interfaces/IUniswap.sol";
 
 
+//1 DAI = 1000000000000000000 (18 decimals)
 /*
  * Arbitrageur is a contract to simulate the usage of flashloans
  * to make profit out of a market inbalacement
@@ -19,11 +20,13 @@ import "https://github.com/Robsonsjre/FlashloanUsecases/blob/master/contracts/in
  * 4. Repay Aave loan
  * 5. Keep the profits
  */
-contract Arbitrageur is Addresses {
+contract Arbitrageur is
+    FlashLoanReceiverBase(address(0x506B0B2CF20FAA8f38a4E2B524EE43e1f4458Cc5))
+{
     address public constant DAI_ADDRESS = 0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD;
-    address public constant BAT_ADDRESS = 0x61e4CAE3DA7FD189e52a4879C7B8067D7C2Cc0FA;
-    address public constant UNISWAP_FACTORY_A = 0x54Ac34e5cE84C501165674782582ADce2FDdc8F4;
-    address public constant UNISWAP_FACTORY_B = 0xECc6C0542710a0EF07966D7d1B10fA38bbb86523;
+    address public constant BAT_ADDRESS = 0x2d12186Fbb9f9a8C28B3FfdD4c42920f8539D738;
+    address public constant UNISWAP_FACTORY_A = 0xECc6C0542710a0EF07966D7d1B10fA38bbb86523;
+    address public constant UNISWAP_FACTORY_B = 0x54Ac34e5cE84C501165674782582ADce2FDdc8F4;
 
     ILendingPool public lendingPool;
     IUniswapExchange public exchangeA;
@@ -109,38 +112,15 @@ contract Arbitrageur is Addresses {
             DAI_ADDRESS
         );
 
-        require(daiBought > _amount, "Did not profit");
-
         // Repay loan
         uint256 totalDebt = _amount.add(_fee);
+
+        require(daiBought > totalDebt, "Did not profit");
+
         transferFundsBackToPoolInternal(_reserve, totalDebt);
     }
 
-    function getDeadline() internal returns (uint256) {
+    function getDeadline() internal view returns (uint256) {
         return now + 3000;
-    }
-
-    /*
-     * Increase the price difference between both exchanges
-     * so there can still be arbitrage oportunities in the
-     * example
-     */
-    function imbalanceExchanges(uint256 _amount) external {
-        ERC20 dai = ERC20(DAI_ADDRESS);
-        require(
-            dai.transferFrom(msg.sender, address(this), _amount),
-            "Could not tranfer DAI"
-        );
-        require(
-            dai.approve(address(exchangeB), _amount),
-            "Could not approve DAI sell"
-        );
-
-        exchangeB.tokenToEthTransferInput(
-            _amount,
-            1,
-            getDeadline(),
-            msg.sender
-        );
     }
 }
